@@ -1,11 +1,35 @@
+import enum
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Table
+from sqlalchemy import (Boolean, Column, DateTime, Enum, ForeignKey, Integer,
+                        String, Table)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy_file import FileField
 
 from src.database import Base
+
+
+class Gender(str, enum.Enum):
+    HOMME = "homme"
+    FEMME = "femme"
+    AUTRE = "autre"
+
+class Categorie(str, enum.Enum):
+  PORTAIL_COULISSANT = "portail-coulissant"
+  PORTAIL_BATTANT = "portail-battant"
+  PORTILLON = "portillon"
+  ACCESSOIRE_PORTAIL = "accessoire-portail"
+  PERGOLA = "pergola"
+  MOTORISATION = "motorisation-portail"
+
+class StatutCommande(str, enum.Enum):
+  EN_ATTENTE = "en-attente"
+  EN_COURS = "en-cours"
+  EN_LIVRAISON = "en-livraison"
+  LIVRE = "livre"
+  ANNULE = "annule"
+
 
 # Table d'association pour la relation many-to-many entre Commande et Produit
 commande_produit = Table(
@@ -27,7 +51,12 @@ class Utilisateur(Base):
     __tablename__ = "utilisateurs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    sexe: Mapped[Gender] = mapped_column(Enum(Gender))
     nom: Mapped[str] = mapped_column(String(100))
+    prenom: Mapped[str] = mapped_column(String(100))
+    telephone: Mapped[str] = mapped_column(String(100))
+    recevoirMails: Mapped[bool] = mapped_column(Boolean, default=True)
+    rgpd: Mapped[bool] = mapped_column(Boolean, default=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     mot_de_passe: Mapped[str] = mapped_column(String(255))
     date_creation: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -40,7 +69,10 @@ class Adresse(Base):
     __tablename__ = "adresses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    rue: Mapped[str] = mapped_column(String(255))
+    nom: Mapped[str] = mapped_column(String(100))
+    prenom: Mapped[str] = mapped_column(String(100))
+    adresse: Mapped[str] = mapped_column(String(255))
+    complement: Mapped[str] = mapped_column(String(255))
     ville: Mapped[str] = mapped_column(String(100))
     code_postal: Mapped[str] = mapped_column(String(10))
     pays: Mapped[str] = mapped_column(String(100))
@@ -54,6 +86,8 @@ class Commande(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date_commande: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    statut: Mapped[StatutCommande] = mapped_column(Enum(StatutCommande))
+    
     utilisateur_id: Mapped[int] = mapped_column(ForeignKey("utilisateurs.id"))
 
     # Relations
@@ -69,6 +103,12 @@ class Produit(Base):
     prix: Mapped[float]
     bois_id: Mapped[Optional[int]] = mapped_column(ForeignKey("bois.id"))
     ral_id: Mapped[Optional[int]] = mapped_column(ForeignKey("rals.id"))
+    categorie: Mapped[Categorie] = mapped_column(Enum(Categorie))
+    hauteur: Mapped[float]
+    largeur: Mapped[float]
+    mitEnAvant: Mapped[bool]
+    meilleurVente: Mapped[bool]
+
 
     # Relations
     bois: Mapped[Optional["Bois"]] = relationship()
