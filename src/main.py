@@ -12,7 +12,7 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 
 from src.config import DESCRIPTION, TAGS_METADATA, TITLE
 from src.database import create_database, engine
-from src.models.user import User
+from src.models.models import *
 from src.routes.auth import router as auth_router
 from src.routes.user import router as user_router
 from src.schemas.user import UserResponse
@@ -40,7 +40,20 @@ app.add_middleware(
 )
 
 admin = Admin(engine)
-admin.add_view(ModelView(User))
+
+admin.add_view(ModelView(Utilisateur))
+admin.add_view(ModelView(Adresse))
+admin.add_view(ModelView(Commande))
+admin.add_view(ModelView(Produit))
+admin.add_view(ModelView(Bois))
+admin.add_view(ModelView(RAL))
+admin.add_view(ModelView(Image))
+
+
+
+
+
+
 admin.mount_to(app)
 
 @app.get("/", tags=["Server"])
