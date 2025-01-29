@@ -14,6 +14,7 @@ from src.config import DESCRIPTION, TAGS_METADATA, TITLE
 from src.database import create_database, engine
 from src.models.models import *
 from src.routes.auth import router as auth_router
+from src.routes.models import router as models_router
 from src.routes.user import router as user_router
 from src.schemas.user import UserResponse
 
@@ -67,3 +68,4 @@ async def read_item():
 
 app.include_router(user_router, prefix="/users", tags=["Users"])
 app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+app.include_router(models_router, prefix="/models", tags=["Models"])
