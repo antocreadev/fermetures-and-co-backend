@@ -8,6 +8,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from libcloud.storage.drivers.local import LocalStorageDriver
 from sqlalchemy.orm import Session
 from sqlalchemy_file.storage import StorageManager
+from starlette_admin import I18nConfig
 from starlette_admin.contrib.sqla import Admin, ModelView
 
 from src.config import DESCRIPTION, TAGS_METADATA, TITLE
@@ -40,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-admin = Admin(engine)
+admin = Admin(engine, i18n_config = I18nConfig(default_locale="fr"))
 
 admin.add_view(ModelView(Utilisateur))
 admin.add_view(ModelView(Adresse))
