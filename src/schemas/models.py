@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
@@ -6,7 +7,6 @@ from pydantic import BaseModel
 from src.models.models import Categorie, Gender, StatutCommande
 
 
-# Schémas pour Image
 class FileField(BaseModel):
     filename: str
     content_type: Optional[str] = None

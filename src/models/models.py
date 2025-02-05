@@ -3,17 +3,18 @@ from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import (Boolean, Column, DateTime, Enum, ForeignKey, Integer,
-                        String, Table)
+                        String, Table, event)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy_file import FileField
 
 from src.database import Base
+from src.tasks import get_password_hash
 
 
 class Gender(str, enum.Enum):
-    HOMME = "homme"
-    FEMME = "femme"
-    AUTRE = "autre"
+    HOMME = "HOMME"
+    FEMME = "FEMME"
+    AUTRE = "AUTRE"
 
 class Categorie(str, enum.Enum):
   PORTAIL_COULISSANT = "portail-coulissant"
@@ -51,7 +52,7 @@ class Utilisateur(Base):
     __tablename__ = "utilisateurs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    sexe: Mapped[Gender] = mapped_column(Enum(Gender))
+    sexe: Mapped[Gender] = mapped_column(Enum(Gender, values_callable=lambda obj: [e.value for e in obj]))
     nom: Mapped[str] = mapped_column(String(100))
     prenom: Mapped[str] = mapped_column(String(100))
     telephone: Mapped[str] = mapped_column(String(100))
@@ -64,6 +65,19 @@ class Utilisateur(Base):
     # Relations
     adresses: Mapped[List["Adresse"]] = relationship(back_populates="utilisateur", cascade="all, delete-orphan")
     commandes: Mapped[List["Commande"]] = relationship(back_populates="utilisateur", cascade="all, delete-orphan")
+
+# Événement qui s'exécute avant l'insertion d'un nouvel utilisateur
+@event.listens_for(Utilisateur, 'before_insert')
+def hash_password_before_insert(mapper, connection, target):
+    if target.mot_de_passe:  # Vérifie si un mot de passe est défini
+        target.mot_de_passe = get_password_hash(target.mot_de_passe)
+
+# Événement qui s'exécute avant la mise à jour d'un utilisateur
+@event.listens_for(Utilisateur, 'before_update')
+def hash_password_before_update(mapper, connection, target):
+    # Vérifie si le mot de passe a été modifié
+    if target.mot_de_passe and not target.mot_de_passe.startswith('$2b$'):  # Vérifie si le mot de passe n'est pas déjà haché
+        target.mot_de_passe = get_password_hash(target.mot_de_passe)
 
 class Adresse(Base):
     __tablename__ = "adresses"

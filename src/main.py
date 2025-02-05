@@ -2,7 +2,7 @@ from datetime import datetime
 from os import makedirs
 from typing import Annotated
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from libcloud.storage.drivers.local import LocalStorageDriver
@@ -12,11 +12,11 @@ from starlette_admin.contrib.sqla import Admin, ModelView
 
 from src.config import DESCRIPTION, TAGS_METADATA, TITLE
 from src.database import create_database, engine
+from src.dependencies import get_current_user
 from src.models.models import *
 from src.routes.auth import router as auth_router
 from src.routes.models import router as models_router
-from src.routes.user import router as user_router
-from src.schemas.user import UserResponse
+from src.schemas.models import Utilisateur as UtilisateurSchema
 
 # Configure Storage
 makedirs("./src/upload/attachment", 0o777, exist_ok=True)
@@ -66,6 +66,6 @@ async def read_item():
     unix_timestamp = datetime.now().timestamp()
     return {"unixTime": unix_timestamp}
 
-app.include_router(user_router, prefix="/users", tags=["Users"])
-app.include_router(auth_router, prefix="/auth", tags=["Auth"])
+
 app.include_router(models_router, prefix="/models", tags=["Models"])
+app.include_router(auth_router, prefix="/auth", tags=["Authentification"])
